@@ -4,19 +4,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: liveto_db
+      POSTGRES_USER: postgres  # You can change this to your desired username
+      POSTGRES_PASSWORD: password  # Set the desired password
+      POSTGRES_DB: livetpo_db  # Set your desired database name
 
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python liveTpo/manage.py makemigrations && python liveTpo/manage.py migrate && python liveTpo/manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     env_file:
-      - .env  
+      - .env  # This file should contain any additional environment variables
     depends_on:
       - db
 
