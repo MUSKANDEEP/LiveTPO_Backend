@@ -19,11 +19,28 @@ def login_user(request):
     password = request.data.get('password')
 
     user = authenticate(username=username, password=password)
+    
     if user is not None:
         token = get_tokens_for_user(user)
-        return Response({'token': token, 'message': 'Login successful!'}, status=status.HTTP_200_OK)
+        
+        # Modify response to include user details
+        user_data = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "role": "admin" if user.is_staff else "student",  
+        }
+
+        return Response({
+            'token': token,
+            'user': user_data,
+            'message': 'Login successful!',
+        }, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 @api_view(['POST'])
 def register_user(request):
