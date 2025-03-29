@@ -8,8 +8,8 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from .models import Student
 from .forms import StudentRegistrationForm
+from .utils import send_verification_email  # Ensure this function exists
 
-# 🔹 Registration View
 def student_register(request, token):
     try:
         student = Student.objects.get(registration_token=token, is_verified=False)
@@ -25,16 +25,18 @@ def student_register(request, token):
             student.phone = form.cleaned_data['phone']
             student.course = form.cleaned_data['course']
             student.cgpa = form.cleaned_data['cgpa']
-            student.set_password(form.cleaned_data['password1'])
+            student.set_password(form.cleaned_data['password1'])  # Ensure 'password1' exists
+            student.is_verified = True  # Mark student as verified upon registration
             student.save()
 
-            # Send email verification
+            # Send email verification (Ensure function exists in utils.py)
             send_verification_email(student)
+
             messages.success(request, "Check your email to verify your account.")
             return redirect('login')
     else:
         form = StudentRegistrationForm()
-    
+
     return render(request, 'register.html', {'form': form})
 
 # 🔹 Email Verification Function

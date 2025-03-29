@@ -30,7 +30,7 @@ def login_user(request):
             "email": user.email,
             "first_name": user.first_name,
             "last_name": user.last_name,
-            "role": "admin" if user.is_staff else "student",  
+            "role": "admin" if user.is_staff else "student",  # Example role logic
         }
 
         return Response({

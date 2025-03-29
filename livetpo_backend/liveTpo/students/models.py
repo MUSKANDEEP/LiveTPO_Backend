@@ -11,5 +11,8 @@ class Student(models.Model):
     is_verified = models.BooleanField(default=False)  # Email verification status
     verification_token = models.CharField(max_length=255, blank=True, null=True)  # Token for email verification
 
+    class Meta:
+        db_table = "student_profiles"
+        
     def __str__(self):
         return self.email
