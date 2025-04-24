@@ -3,6 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import PlacementDrive
 from .serializers import PlacementDriveSerializer
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from students.models import Student
+from companies.models import Company
+from placement.models import PlacementDrive  # Adjust if app/model name is different
+from datetime import date
 
 @api_view(["GET"])
 def get_all_placement_drives(request):
@@ -39,3 +45,18 @@ def update_placement_drive(request, pk):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_dashboard_stats(request):
+    total_students = Student.objects.count()
+    total_companies = Company.objects.count()
+    upcoming_drives = PlacementDrive.objects.filter(status="Upcoming", date__gte=date.today()).count()
+    # total_applications = Application.objects.count()
+
+    return Response({
+        "total_students": total_students,
+        "total_companies": total_companies,
+        "upcoming_drives": upcoming_drives,
+        # "total_applications": total_applications,
+    })

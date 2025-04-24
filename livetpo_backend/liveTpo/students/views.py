@@ -117,3 +117,132 @@ def student_login(request):
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@csrf_exempt
+def student_details(request, student_id):
+    if request.method == "GET":
+        try:
+            student = Student.objects.get(id=student_id)
+            
+            # Make sure the student is authenticated, for example, by token or session
+            student_data = {
+                "id": student.id,
+                "username": student.username,
+                "email": student.email,
+                "phone": student.phone,
+                "course": student.course,
+                "cgpa": str(student.cgpa),
+                "role": "student"
+            }
+            
+            return JsonResponse({
+                "message": "Student details fetched successfully",
+                "user": student_data
+            }, status=200)
+        
+        except Student.DoesNotExist:
+            return JsonResponse({"error": "Student not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@csrf_exempt
+def update_student(request, student_id):
+    if request.method == "PATCH":
+        try:
+            student = Student.objects.get(id=student_id)
+            
+            # Check for the fields that can be updated
+            data = json.loads(request.body)
+            
+            # Update fields
+            if 'username' in data:
+                student.username = data['username']
+            if 'email' in data:
+                student.email = data['email']
+            if 'phone' in data:
+                student.phone = data['phone']
+            if 'course' in data:
+                student.course = data['course']
+            if 'cgpa' in data:
+                try:
+                    cgpa = Decimal(data['cgpa'])
+                    if 0 <= cgpa <= 10:
+                        student.cgpa = cgpa
+                    else:
+                        return JsonResponse({"error": "CGPA must be between 0 and 10"}, status=400)
+                except (ValueError, TypeError, InvalidOperation):
+                    return JsonResponse({"error": "Invalid CGPA format"}, status=400)
+            
+            if 'password' in data:
+                student.password = make_password(data['password'])
+            
+            student.save()
+            
+            return JsonResponse({
+                "message": "Student profile updated successfully",
+                "user": {
+                    "id": student.id,
+                    "username": student.username,
+                    "email": student.email,
+                    "phone": student.phone,
+                    "course": student.course,
+                    "cgpa": str(student.cgpa),
+                    "role": "student"
+                }
+            }, status=200)
+        
+        except Student.DoesNotExist:
+            return JsonResponse({"error": "Student not found"}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON data"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@csrf_exempt
+def delete_student(request, student_id):
+    if request.method == "DELETE":
+        try:
+            student = Student.objects.get(id=student_id)
+            student.delete()
+
+            return JsonResponse({"message": "Student deleted successfully"}, status=200)
+        
+        except Student.DoesNotExist:
+            return JsonResponse({"error": "Student not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@csrf_exempt
+def list_students(request):
+    if request.method == "GET":
+        try:
+            # You can add filters or pagination here if needed
+            students = Student.objects.all()
+            students_data = [
+                {
+                    "id": student.id,
+                    "username": student.username,
+                    "email": student.email,
+                    "phone": student.phone,
+                    "course": student.course,
+                    "cgpa": str(student.cgpa),
+                    "role": "student"
+                }
+                for student in students
+            ]
+            
+            return JsonResponse({
+                "message": "List of all students",
+                "students": students_data
+            }, status=200)
+        
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    
+    return JsonResponse({"error": "Invalid request method"}, status=405)
