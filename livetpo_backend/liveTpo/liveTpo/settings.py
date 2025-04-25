@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'events',
     'academics',
     'companies',
+    'applications',
 ]
 
 MIDDLEWARE = [

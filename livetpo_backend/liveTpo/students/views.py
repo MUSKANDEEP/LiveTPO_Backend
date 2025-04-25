@@ -20,9 +20,9 @@ def student_register(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            
+
             # Check required fields
-            required_fields = ['username', 'email', 'phone', 'course', 'cgpa', 'password']
+            required_fields = ['username', 'email', 'phone', 'course', 'cgpa', 'password', 'skills']
             for field in required_fields:
                 if field not in data:
                     return JsonResponse({"error": f"Missing required field: {field}"}, status=400)
@@ -32,7 +32,7 @@ def student_register(request):
                 validate_email(data['email'])
             except ValidationError:
                 return JsonResponse({"error": "Invalid email format"}, status=400)
-            
+
             # Check if email or phone already exists
             if Student.objects.filter(email=data['email']).exists():
                 return JsonResponse({"error": "Email already registered"}, status=400)
@@ -46,7 +46,21 @@ def student_register(request):
                     return JsonResponse({"error": "CGPA must be between 0 and 10"}, status=400)
             except (ValueError, TypeError, InvalidOperation):
                 return JsonResponse({"error": "Invalid CGPA format"}, status=400)
-            
+
+            # Validate password strength (e.g., at least 8 characters, includes numbers/special chars)
+            password = data['password']
+            if len(password) < 8:
+                return JsonResponse({"error": "Password must be at least 8 characters long"}, status=400)
+
+            # Validate skills (optional, but should be a list)
+            if not isinstance(data['skills'], list):
+                return JsonResponse({"error": "Skills must be a list of strings"}, status=400)
+
+            # Validate resume_link (optional, but should be a valid URL)
+            resume_link = data.get('resume_link', None)
+            if resume_link and not isinstance(resume_link, str):
+                return JsonResponse({"error": "Resume link must be a valid URL"}, status=400)
+
             # Create student
             student = Student.objects.create(
                 username=data['username'],
@@ -55,9 +69,12 @@ def student_register(request):
                 course=data['course'],
                 cgpa=cgpa,
                 password=make_password(data['password']),
+                skills=data['skills'],
+                resume_link=resume_link,  # Optional field
                 is_verified=False
             )
-            
+
+            # Generate token
             tokens = get_tokens_for_user(student)
 
             return JsonResponse({
@@ -69,9 +86,12 @@ def student_register(request):
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
         except Exception as e:
+            # You can log the exception for better error tracking
+            print(f"Error during registration: {str(e)}")
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
+
 
 @csrf_exempt
 def student_login(request):
@@ -131,6 +151,8 @@ def student_details(request, student_id):
                 "email": student.email,
                 "phone": student.phone,
                 "course": student.course,
+                "skills": student.skills,
+                "resume_link": student.resume_link,
                 "cgpa": str(student.cgpa),
                 "role": "student"
             }
