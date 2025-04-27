@@ -36,16 +36,22 @@ class Student(models.Model):
     relocation_ready = models.BooleanField(default=True)
     preferred_company_type = models.CharField(
         max_length=100,
-        choices=[
-            ('Startup', 'Startup'),
-            ('MNC', 'MNC'),
-            ('Any', 'Any')
-        ],
+        choices=[('Startup', 'Startup'), ('MNC', 'MNC'), ('Any', 'Any')],
         default='MNC'
     )
 
     applied_companies = models.JSONField(default=list)
     availability_date = models.DateField(blank=True, null=True)
+
+    # New Fields for Placement
+    placement_status = models.CharField(
+        max_length=50,
+        choices=[('Pending', 'Pending'), ('Placed', 'Placed')],
+        default='Pending'
+    )
+
+    offers = models.JSONField(default=list)  # Array of offers with company, role, CTC, etc.
+    placement_history = models.JSONField(default=list)  # Array of placement history (company, status, year)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
