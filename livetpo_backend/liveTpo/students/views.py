@@ -161,7 +161,7 @@ def update_student(request, student_id):
             data = json.loads(request.body)
 
             # Update basic fields
-            string_fields = ["username", "email", "contact", "phone", "course", "university"]
+            string_fields = ["username", "email", "phone", "course", "university"]
             for field in string_fields:
                 if field in data:
                     setattr(student, field, data[field] or None)
@@ -268,4 +268,29 @@ def list_students(request):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
         
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@csrf_exempt
+def student_placement_status(request, student_id):
+    if request.method == "GET":
+        try:
+            student = Student.objects.get(id=student_id)
+
+            # Build structured placement data
+            placement_data = {
+                "currentStatus": student.placement_status or "Not Placed",
+                "offersReceived": student.offers or [],
+                "placementHistory": student.placement_history or []
+            }
+
+            return JsonResponse({
+                "message": "Placement data fetched successfully",
+                "data": placement_data
+            }, status=200)
+
+        except Student.DoesNotExist:
+            return JsonResponse({"error": "Student not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": f"Error: {str(e)}"}, status=400)
+
     return JsonResponse({"error": "Invalid request method"}, status=405)

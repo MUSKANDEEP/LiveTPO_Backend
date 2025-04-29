@@ -4,7 +4,7 @@ class Student(models.Model):
     # Basic Info
     username = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    contact = models.CharField(max_length=15)
+    # contact = models.CharField(max_length=15)
     phone = models.CharField(max_length=15, unique=True)
     course = models.CharField(max_length=100)
     cgpa = models.DecimalField(max_digits=4, decimal_places=2)

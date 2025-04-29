@@ -67,6 +67,8 @@ def get_job_application(request, application_id):
             application_data = {
                 "id": application.id,
                 "student_id": application.student.id,
+                "student": application.student.username,
+                "student_email": application.student.email,
                 "company_name": application.company_name,
                 "job_role": application.job_role,
                 "ctc": str(application.ctc),
@@ -124,6 +126,8 @@ def update_job_application(request, application_id):
                 "application": {
                     "id": application.id,
                     "student_id": application.student.id,
+                    "student": application.student.username,
+                    "student_email": application.student.email,
                     "company_name": application.company_name,
                     "job_role": application.job_role,
                     "ctc": str(application.ctc),
@@ -170,6 +174,8 @@ def list_job_applications(request):
                 {
                     "id": application.id,
                     "student_id": application.student.id,
+                    "student": application.student.username,
+                    "student_email": application.student.email,
                     "company_name": application.company_name,
                     "job_role": application.job_role,
                     "ctc": str(application.ctc),
